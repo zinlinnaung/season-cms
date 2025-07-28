@@ -6,18 +6,11 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Stack,
   Paper,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
 import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
-import Confetti from "react-confetti";
-import { useWindowSize } from "@react-hook/window-size";
-import { useNavigate } from "react-router-dom"; // 👈 Required for routing
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const LoginPage = () => {
@@ -25,15 +18,12 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-  const [width, height] = useWindowSize();
-  const navigate = useNavigate(); // 👈 Hook for navigation
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    setShowDialog(false);
 
     const phoneRegex = /^09\d{6,9}$/;
     if (!phoneRegex.test(phone)) {
@@ -45,18 +35,12 @@ const LoginPage = () => {
     try {
       const response = await axios.post(
         "https://megawecare.tharapa.ai/api/authentication/i/login",
-        {
-          phone,
-          password,
-        }
+        { phone, password }
       );
-
       const { access_token, refresh_token } = response.data;
-
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
-
-      navigate("/dashboard"); // Redirect to dashboard
+      navigate("/dashboard");
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError("ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားနေပါသည်။");
@@ -69,111 +53,124 @@ const LoginPage = () => {
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "#fff0f5", // Light pink background
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      {/* Logo */}
       <Box
+        component="img"
+        src="shuya.jpg"
+        alt="Logo"
         sx={{
-          minHeight: "90vh",
-          backgroundColor: "#ffffff",
-          // backgroundImage: "url('text.png')",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "contain",
-          backgroundPosition: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          px: 2,
+          width: { xs: "45%", sm: "140px", md: "8%", lg: "8%" },
+          mb: 3,
+        }}
+      />
+
+      {/* Login Card */}
+      <Paper
+        elevation={4}
+        sx={{
+          width: { xs: "100%", sm: "90%", md: "500px" },
+          borderRadius: 4,
+          backgroundColor: "#ffe4ec", // Pink card
+          p: 4,
         }}
       >
-        <Box
-          component="img"
-          src="logo.png"
-          alt="Logo"
+        <Typography
+          variant="h5"
           sx={{
-            width: { xs: "45%", sm: "140px", md: "10%", lg: "12%" },
-            mt: 2,
             mb: 3,
-          }}
-        />
-
-        <Paper
-          elevation={3}
-          sx={{
-            width: { xs: "100%", sm: "90%", md: "500px", lg: "700px" },
-            pt: { md: 2, lg: 2 },
-            pr: { md: 9, lg: 9 },
-            pl: { md: 9, lg: 9 },
-            pb: 6,
-            borderRadius: 4,
-            backgroundColor: "#ffffff",
+            fontWeight: "bold",
+            textAlign: "center",
+            color: "#d81b60", // Deep pink text
           }}
         >
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            display="flex"
-            flexDirection="column"
-            justifyContent={"center"}
-            padding={4}
-            gap={2}
+          Login
+        </Typography>
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          display="flex"
+          flexDirection="column"
+          gap={3}
+        >
+          {/* Phone */}
+          <TextField
+            label="ဖုန်းနံပါတ်ထည့်ပါ"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+            fullWidth
+            disabled={isLoading}
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+              },
+            }}
+            InputProps={{
+              startAdornment: <PhoneAndroidIcon sx={{ color: "#d81b60" }} />,
+            }}
+          />
+
+          {/* Password */}
+          <TextField
+            label="စကားဝှက်ထည့်ပါ"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            fullWidth
+            disabled={isLoading}
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+              },
+            }}
+            InputProps={{
+              startAdornment: <LockIcon sx={{ color: "#d81b60" }} />,
+            }}
+          />
+
+          {error && <Alert severity="error">{error}</Alert>}
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{
+              backgroundColor: "#ec407a",
+              color: "#fff",
+              fontSize: "16px",
+              fontWeight: "bold",
+              borderRadius: "50px",
+              "&:hover": {
+                backgroundColor: "#d81b60",
+              },
+            }}
+            disabled={isLoading}
           >
-            <Typography mb={1}>ဖုန်းနံပါတ်</Typography>
-            <TextField
-              label="ဖုန်းနံပါတ်ထည့်ပါ"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
-              fullWidth
-              disabled={isLoading}
-              variant="outlined"
-              InputProps={{
-                startAdornment: <PhoneAndroidIcon fontSize="small" />,
-              }}
-            />
-
-            <Typography mb={1}>စကားဝှက်</Typography>
-            <TextField
-              label="စကားဝှက်ထည့်ပါ"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              fullWidth
-              disabled={isLoading}
-              variant="outlined"
-              InputProps={{
-                startAdornment: <LockIcon fontSize="small" />,
-              }}
-            />
-
-            {error && <Alert severity="error">{error}</Alert>}
-
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              sx={{
-                background: "linear-gradient(to right, #00B5FF, #1F4F9E)",
-                color: "#fff",
-                py: 1.5,
-                mt: 3,
-                borderRadius: "50px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                minWidth: "150px",
-                "&:hover": {
-                  background: "linear-gradient(to right, #1F4F9E, #00B5FF)",
-                },
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Login"
-              )}
-            </Button>
-          </Box>
-        </Paper>
-      </Box>
-    </>
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Login"
+            )}
+          </Button>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 

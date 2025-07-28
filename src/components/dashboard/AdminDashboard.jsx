@@ -1,335 +1,195 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
-  Typography,
   Box,
-  TextField,
-  Button,
+  CssBaseline,
+  Typography,
+  AppBar,
+  Toolbar,
   Grid,
   Card,
   CardContent,
-  CardHeader,
-  Container,
-  Paper,
-  Divider,
-  Tooltip,
-  InputAdornment,
-  CircularProgress,
+  createTheme,
+  ThemeProvider,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import SearchIcon from "@mui/icons-material/Search";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import TuneIcon from "@mui/icons-material/Tune";
-import * as XLSX from "xlsx";
-import axios from "axios";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  LineChart,
+  Line,
+  ResponsiveContainer,
+} from "recharts";
+import PeopleIcon from "@mui/icons-material/People";
+import ArticleIcon from "@mui/icons-material/Article";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
-const AdminDashboard = ({ prizeNameFilter }) => {
-  const [filters, setFilters] = useState({
-    outletName: "",
-    phone: "",
-    township: "", // ✅ Add this
-    code: "",
-    startDate: "",
-    endDate: "",
-  });
-
-  const [records, setRecords] = useState([]);
-  const [filteredRecords, setFilteredRecords] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const fetchRecords = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(
-        "https://megawecare.tharapa.ai/api/customer-records"
-      );
-      const transformed = res.data.map((r) => ({
-        id: r.id,
-        name: r.name,
-        phone: r.phone,
-        outletName: r.outletName,
-        township: r.township,
-        code: r.code.code,
-        prizeName: r.code.prizeName,
-        createdAt: new Date(r.createdAt).toLocaleString(),
-      }));
-      setRecords(transformed);
-    } catch (err) {
-      console.error("Failed to fetch records:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchFilteredData = () => {
-    const filtered = records.filter((record) => {
-      const matchesOutlet = record.outletName
-        .toLowerCase()
-        .includes(filters.outletName.toLowerCase());
-      const matchesPhone = record.phone
-        .toLowerCase()
-        .includes(filters.phone.toLowerCase());
-      const matchesCode = record.code
-        .toLowerCase()
-        .includes(filters.code.toLowerCase());
-
-      const matchesTownship = record.township
-        ?.toLowerCase()
-        .includes(filters.township.toLowerCase());
-
-      const createdAt = new Date(record.createdAt);
-      const start = filters.startDate ? new Date(filters.startDate) : null;
-      const end = filters.endDate ? new Date(filters.endDate) : null;
-
-      const matchesStartDate = !start || createdAt >= start;
-      const matchesEndDate = !end || createdAt <= end;
-
-      const matchesPrize =
-        !prizeNameFilter ||
-        record.prizeName?.toLowerCase() === prizeNameFilter.toLowerCase();
-
-      return (
-        matchesOutlet &&
-        matchesPhone &&
-        matchesTownship &&
-        matchesCode &&
-        matchesStartDate &&
-        matchesEndDate &&
-        matchesPrize
-      );
-    });
-
-    setFilteredRecords(filtered);
-  };
-
-  useEffect(() => {
-    fetchRecords();
-  }, []);
-
-  useEffect(() => {
-    fetchFilteredData();
-  }, [records, filters, prizeNameFilter]);
-
-  const handleChange = (field) => (event) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-  };
-
-  const handleExcelExport = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredRecords);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Filtered Records");
-    XLSX.writeFile(wb, "filtered_records.xlsx");
-  };
-
-  const gradientButtonStyle = {
-    background: "linear-gradient(to right, #5db6be, #34609e)",
-    color: "#fff",
-    textTransform: "none",
-    borderRadius: 2,
-    px: 2,
-    "&:hover": {
-      background: "linear-gradient(to right, #3cbfa7, #15124d)",
+// Dark Theme
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+    background: {
+      default: "#121212",
+      paper: "#1E1E1E",
     },
-  };
-
-  const textFieldStyle = {
-    backgroundColor: "#ffffff",
-    borderRadius: 2,
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
+    primary: {
+      main: "#BB86FC",
     },
-  };
+    secondary: {
+      main: "#03DAC6",
+    },
+    text: {
+      primary: "#FFFFFF",
+    },
+  },
+});
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Customer Name", flex: 1 },
-    { field: "phone", headerName: "Phone", flex: 1 },
-    { field: "outletName", headerName: "Outlet", flex: 1 },
-    { field: "township", headerName: "Township", flex: 1 },
-    { field: "code", headerName: "Prize Code", flex: 1 },
-    { field: "createdAt", headerName: "Created At", flex: 1 },
+const Dashboard = () => {
+  // Dummy data - replace with API data
+  const stats = [
+    {
+      title: "Total Users",
+      value: 1500,
+      icon: <PeopleIcon fontSize="large" />,
+      color: "#BB86FC",
+    },
+    {
+      title: "Total Blogs",
+      value: 300,
+      icon: <ArticleIcon fontSize="large" />,
+      color: "#03DAC6",
+    },
+    {
+      title: "Bookmarks",
+      value: 1200,
+      icon: <BookmarkIcon fontSize="large" />,
+      color: "#FF9800",
+    },
+    {
+      title: "Notifications",
+      value: 800,
+      icon: <NotificationsIcon fontSize="large" />,
+      color: "#F44336",
+    },
   ];
 
-  const displayedRecords = filteredRecords.filter((record) =>
-    Object.values(record).some((value) =>
-      String(value).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const userGrowthData = [
+    { month: "Jan", users: 400 },
+    { month: "Feb", users: 600 },
+    { month: "Mar", users: 800 },
+    { month: "Apr", users: 1200 },
+  ];
+
+  const familyPlanData = [
+    { name: "Conceiving", value: 60 },
+    { name: "Avoid Pregnant", value: 40 },
+  ];
+
+  const COLORS = ["#BB86FC", "#03DAC6"];
 
   return (
-    <Box sx={{ bgcolor: "#f5fafe", py: 3, minHeight: "84vh" }}>
-      <Container maxWidth="lg" sx={{ px: 2 }}>
-        <Card
-          sx={{
-            mb: 3,
-            borderRadius: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-            border: "1px solid #e0f0f8",
-          }}
-        >
-          <CardHeader
-            avatar={
-              <Tooltip title="Filter Records">
-                <TuneIcon fontSize="small" color="primary" />
-              </Tooltip>
-            }
-            titleTypographyProps={{ fontWeight: 600, fontSize: "1rem" }}
-            title={
-              prizeNameFilter
-                ? `Filter "${prizeNameFilter}" Prize Records`
-                : "Filter All Prize Records"
-            }
-            subheader="Search by outlet, phone or prize code"
-            subheaderTypographyProps={{ fontSize: "0.85rem" }}
-          />
-          <Divider />
-          <CardContent sx={{ pt: 2, pb: 1 }}>
-            <Grid container spacing={1.5}>
-              {["outletName", "phone", "code", "township"].map((field) => (
-                <Grid item xs={12} md={2.4} key={field}>
-                  <TextField
-                    size="small"
-                    label={
-                      field === "code"
-                        ? "Prize Code"
-                        : field === "phone"
-                        ? "Phone Number"
-                        : field === "outletName"
-                        ? "Outlet Name"
-                        : "Township"
-                    }
-                    variant="outlined"
-                    fullWidth
-                    value={filters[field]}
-                    onChange={handleChange(field)}
-                    sx={textFieldStyle}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    }}
+    // <ThemeProvider theme={darkTheme}>
+    //   <CssBaseline />
+    //   <AppBar position="static" color="primary">
+    //     <Toolbar>
+    //       <Typography variant="h6">Analytics Dashboard</Typography>
+    //     </Toolbar>
+    //   </AppBar>
+
+    <Box p={3}>
+      {/* Stats Cards */}
+      <Grid container spacing={3}>
+        {stats.map((item, index) => (
+          <Grid item xs={12} sm={6} md={5} width={"20%"} key={index}>
+            <Card
+              sx={{
+                backgroundColor: item.color + "33",
+                borderRadius: "16px",
+              }}
+            >
+              <CardContent>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Box>
+                    <Typography variant="h6">{item.title}</Typography>
+                    <Typography variant="h4">{item.value}</Typography>
+                  </Box>
+                  <Box color={item.color}>{item.icon}</Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Charts */}
+      <Grid container spacing={3} mt={3}>
+        <Grid item xs={12} md={8} sx={{ width: "50%" }}>
+          <Card sx={{ borderRadius: "16px" }}>
+            <CardContent>
+              <Typography variant="h6" mb={2}>
+                User Growth
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={userGrowthData}>
+                  <XAxis dataKey="month" stroke="#FFFFFF" />
+                  <YAxis stroke="#FFFFFF" />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="users"
+                    stroke="#BB86FC"
+                    strokeWidth={3}
                   />
-                </Grid>
-              ))}
-              <Grid item xs={12} md={2.4}>
-                <TextField
-                  size="small"
-                  label="Start Date"
-                  type="date"
-                  fullWidth
-                  value={filters.startDate}
-                  onChange={handleChange("startDate")}
-                  sx={textFieldStyle}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} md={2.4}>
-                <TextField
-                  size="small"
-                  label="End Date"
-                  type="date"
-                  fullWidth
-                  value={filters.endDate}
-                  onChange={handleChange("endDate")}
-                  sx={textFieldStyle}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-            </Grid>
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
 
-            <Box mt={2} display="flex" justifyContent="flex-end">
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<FilterAltIcon fontSize="small" />}
-                onClick={fetchFilteredData}
-                disabled={loading}
-                sx={{ ...gradientButtonStyle, mr: 1 }}
-              >
-                {loading ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : (
-                  "Apply Filters"
-                )}
-              </Button>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleExcelExport}
-                sx={gradientButtonStyle}
-              >
-                Export to Excel
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-
-        <Paper elevation={2} sx={{ borderRadius: 2, p: 2, height: "100%" }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            fontSize="1rem"
-            color="#0072ff"
-          >
-            Submitted Records {prizeNameFilter && `(Only ${prizeNameFilter})`}
-          </Typography>
-
-          <Box display="flex" justifyContent="flex-end" mb={1}>
-            <TextField
-              size="small"
-              variant="outlined"
-              placeholder="Search records..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                width: 250,
-                backgroundColor: "#fff",
-                borderRadius: 2,
-              }}
-            />
-          </Box>
-
-          <Box sx={{ height: "40vh", width: "100%" }}>
-            <DataGrid
-              rows={displayedRecords}
-              columns={columns}
-              getRowId={(row) => row.id}
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-              disableSelectionOnClick
-              loading={loading}
-              sx={{
-                fontSize: "0.85rem",
-                backgroundColor: "#ffffff",
-                borderRadius: 2,
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: "#e6f7ff",
-                  color: "#0072ff",
-                  fontWeight: 600,
-                },
-                "& .MuiDataGrid-cell": {
-                  py: 1,
-                },
-              }}
-            />
-          </Box>
-        </Paper>
-      </Container>
+        <Grid item xs={12} md={4} sx={{ width: "30%" }}>
+          <Card sx={{ borderRadius: "16px" }}>
+            <CardContent>
+              <Typography variant="h6" mb={2}>
+                Family Plan Distribution
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={familyPlanData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#8884d8"
+                    label
+                  >
+                    {familyPlanData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
+    // </ThemeProvider>
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;

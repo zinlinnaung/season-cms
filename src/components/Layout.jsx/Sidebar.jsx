@@ -12,13 +12,14 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import SettingsIcon from "@mui/icons-material/Settings";
-import MenuIcon from "@mui/icons-material/Menu";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import BubbleChartIcon from "@mui/icons-material/BubbleChart";
 import LogoutIcon from "@mui/icons-material/Logout";
+import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useLocation } from "react-router-dom";
 import { logout } from "../utils/auth";
+import NotificationAddIcon from "@mui/icons-material/NotificationAdd";
+import BookIcon from "@mui/icons-material/Book";
 
 export const drawerWidth = 240;
 
@@ -27,26 +28,26 @@ const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1090px)");
 
-  const selectedColor = "#10B981";
-  const hoverColor = "#16A34A";
-  const textColor = "#F3F4F6";
-  const sidebarBg = "linear-gradient(to top, #5db6be, #34609e)";
-  const headerBg = "#0f172a";
+  // Colors matching the dashboard theme
+  const selectedColor = "#ec407a"; // pink (#ec407a) for selected background
+  const hoverColor = "#f48fb1"; // lighter pink (#f48fb1) for hover
+  const textColor = "#d81b60"; // darker pink (#d81b60) for text/icons
+  const sidebarBg = "#fff0f5"; // very light pink background (#fff0f5)
+  const headerBg = "#fce4ec"; // soft pale pink for header (#fce4ec)
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-    { text: "Upload", icon: <UploadFileIcon />, path: "/dashboard/upload" },
-    { text: "Enat", icon: <BubbleChartIcon />, path: "/dashboard/enat" },
+    // { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard/upload" },
     {
-      text: "Glucomeal",
-      icon: <BubbleChartIcon />,
+      text: "Notification",
+      icon: <NotificationAddIcon />,
+      path: "/dashboard/enat",
+    },
+    {
+      text: "Blogs",
+      icon: <BookIcon />,
       path: "/dashboard/glucomeal",
     },
-    // {
-    //   text: "Account Settings",
-    //   icon: <SettingsIcon />,
-    //   path: "/dashboard/settings",
-    // },
   ];
 
   const handleDrawerToggle = () => setOpen(!open);
@@ -66,11 +67,12 @@ const Sidebar = () => {
           sx={{
             p: 2,
             textAlign: "center",
-            borderBottom: "1px solid #2d3748",
+            // borderBottom: "1px solid #f48fb1",
+            backgroundColor: "#f48fb1",
           }}
         >
           <Typography variant="h6" fontWeight="bold" color={textColor}>
-            My Admin
+            Shuya Dashboard
           </Typography>
         </Box>
 
@@ -88,6 +90,7 @@ const Sidebar = () => {
                   backgroundColor: selectedColor,
                   "& .MuiListItemText-primary": {
                     fontWeight: "bold",
+                    color: "#fff",
                   },
                   "& .MuiListItemIcon-root": {
                     color: "#fff",
@@ -95,13 +98,22 @@ const Sidebar = () => {
                 },
                 "&:hover": {
                   backgroundColor: hoverColor,
+                  "& .MuiListItemText-primary": {
+                    color: "#fff",
+                  },
+                  "& .MuiListItemIcon-root": {
+                    color: "#fff",
+                  },
                 },
                 "& .MuiListItemText-root": {
                   color: textColor,
                 },
+                "& .MuiListItemIcon-root": {
+                  color: textColor,
+                },
               }}
             >
-              <ListItemIcon sx={{ color: textColor }}>{icon}</ListItemIcon>
+              <ListItemIcon>{icon}</ListItemIcon>
               <ListItemText primary={text} />
             </ListItem>
           ))}
@@ -116,14 +128,23 @@ const Sidebar = () => {
             onClick={logout}
             sx={{
               "&:hover": {
-                backgroundColor: "#dc2626",
+                backgroundColor: hoverColor,
+                "& .MuiListItemText-primary": {
+                  color: "#fff",
+                },
+                "& .MuiListItemIcon-root": {
+                  color: "#fff",
+                },
               },
               "& .MuiListItemText-root": {
                 color: textColor,
               },
+              "& .MuiListItemIcon-root": {
+                color: textColor,
+              },
             }}
           >
-            <ListItemIcon sx={{ color: textColor }}>
+            <ListItemIcon>
               <LogoutIcon />
             </ListItemIcon>
             <ListItemText primary="Logout" />
@@ -161,7 +182,7 @@ const Sidebar = () => {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
-            background: sidebarBg,
+            backgroundColor: sidebarBg,
             color: textColor,
           },
         }}

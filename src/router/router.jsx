@@ -11,6 +11,9 @@ import EnatDashboard from "../components/Enat/EnatDashboard";
 import FerrovitDashboard from "../components/Ferrovit/FerrovitDashboard";
 import GlucomealDashboard from "../components/Glucomeal/GlucomealDashboard";
 import PrivateRoute from "../components/PrivateRoute";
+import NotificationPage from "../components/Noti/NotificationPage";
+import BlogPage from "../components/blog/BlogPage";
+import ReportingPage from "../components/Report/ReportingPage";
 
 export const RouterComponent = () => {
   return (
@@ -26,11 +29,11 @@ export const RouterComponent = () => {
           </PrivateRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route index element={<ReportingPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="upload" element={<ExcelUploadPage />} />
-        <Route path="enat" element={<EnatDashboard />} />
-        <Route path="glucomeal" element={<GlucomealDashboard />} />
+        <Route path="upload" element={<ReportingPage />} />
+        <Route path="enat" element={<NotificationPage />} />
+        <Route path="glucomeal" element={<BlogPage />} />
         <Route path="ferrovit" element={<FerrovitDashboard />} />
       </Route>
 

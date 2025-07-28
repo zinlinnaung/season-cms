@@ -6,7 +6,7 @@ const Topbar = () => {
   return (
     <AppBar
       position="static"
-      sx={{ bgcolor: "#def5fd", color: "black" }}
+      sx={{ bgcolor: "#f48fb1", color: "black" }}
       elevation={1}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
