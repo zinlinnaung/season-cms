@@ -20,6 +20,7 @@ import { Link, useLocation } from "react-router-dom";
 import { logout } from "../utils/auth";
 import NotificationAddIcon from "@mui/icons-material/NotificationAdd";
 import BookIcon from "@mui/icons-material/Book";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 export const drawerWidth = 240;
 
@@ -32,22 +33,22 @@ const Sidebar = () => {
   const selectedColor = "#ec407a"; // pink (#ec407a) for selected background
   const hoverColor = "#f48fb1"; // lighter pink (#f48fb1) for hover
   const textColor = "#d81b60"; // darker pink (#d81b60) for text/icons
-  const sidebarBg = "#fff0f5"; // very light pink background (#fff0f5)
+  const sidebarBg = "white"; // very light pink background (#fff0f5)
   const headerBg = "#fce4ec"; // soft pale pink for header (#fce4ec)
 
   const menuItems = [
     // { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
     { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard/upload" },
     {
-      text: "Notification",
-      icon: <NotificationAddIcon />,
+      text: "Orders",
+      icon: <ShoppingCartIcon />,
       path: "/dashboard/enat",
     },
-    {
-      text: "Blogs",
-      icon: <BookIcon />,
-      path: "/dashboard/glucomeal",
-    },
+    // {
+    //   text: "Blogs",
+    //   icon: <BookIcon />,
+    //   path: "/dashboard/glucomeal",
+    // },
   ];
 
   const handleDrawerToggle = () => setOpen(!open);
@@ -68,11 +69,11 @@ const Sidebar = () => {
             p: 2,
             textAlign: "center",
             // borderBottom: "1px solid #f48fb1",
-            backgroundColor: "#f48fb1",
+            backgroundColor: "#188b40",
           }}
         >
-          <Typography variant="h6" fontWeight="bold" color={textColor}>
-            Shuya Dashboard
+          <Typography variant="h6" fontWeight="bold" color="white">
+            Season Dashboard
           </Typography>
         </Box>
 

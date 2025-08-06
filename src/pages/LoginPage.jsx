@@ -67,7 +67,7 @@ const LoginPage = () => {
       {/* Logo */}
       <Box
         component="img"
-        src="shuya.jpg"
+        src="season.png"
         alt="Logo"
         sx={{
           width: { xs: "45%", sm: "140px", md: "8%", lg: "8%" },

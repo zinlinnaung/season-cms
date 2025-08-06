@@ -9,7 +9,7 @@ const Layout = () => {
       <Sidebar />
       <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
         {/* <Topbar /> */}
-        <Box sx={{ flexGrow: 1, p: 3, bgcolor: "#fff0f5" }}>
+        <Box sx={{ flexGrow: 1, p: 3, bgcolor: "#fefefe" }}>
           <Outlet />
         </Box>
       </Box>

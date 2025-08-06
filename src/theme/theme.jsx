@@ -1,20 +1,20 @@
+// theme.js
 import { createTheme } from "@mui/material/styles";
 
-// Define the theme structure
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2", // Blue
+      main: "#FCA5A5", // Light Red
     },
     secondary: {
-      main: "#9c27b0", // Purple
+      main: "#86EFAC", // Light Green
     },
     background: {
-      default: "#f4f6f8", // Light background color
+      default: "#fefefe",
     },
     text: {
-      primary: "#212121", // Primary text color
-      secondary: "#757575", // Secondary text color
+      primary: "#212121",
+      secondary: "#757575",
     },
   },
   typography: {
@@ -33,14 +33,22 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 8, // Rounded corners for components
+    borderRadius: 8,
   },
-  spacing: 8, // Base spacing for consistent padding and margins
+  spacing: 8,
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: "12px", // Make buttons have rounded edges
+          borderRadius: "12px",
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: "8px",
         },
       },
     },
