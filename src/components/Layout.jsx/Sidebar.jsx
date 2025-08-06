@@ -38,7 +38,7 @@ const Sidebar = () => {
 
   const menuItems = [
     // { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard/upload" },
+    // { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard/upload" },s
     {
       text: "Orders",
       icon: <ShoppingCartIcon />,
