@@ -30,7 +30,7 @@ export const RouterComponent = () => {
           </PrivateRoute>
         }
       >
-        <Route index element={<ReportingPage />} />
+        <Route index element={<CustomerPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="upload" element={<ReportingPage />} />
         <Route path="enat" element={<CustomerPage />} />
