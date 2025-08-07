@@ -103,9 +103,73 @@ const CustomerPage = () => {
       await axios.post(
         `https://node.tharapa.ai/api/customer-other/confirm/${selectedRow.id}`
       );
+      // Utility functions
+      function burmeseToEnglishNumber(str) {
+        const map = {
+          "၀": "0",
+          "၁": "1",
+          "၂": "2",
+          "၃": "3",
+          "၄": "4",
+          "၅": "5",
+          "၆": "6",
+          "၇": "7",
+          "၈": "8",
+          "၉": "9",
+        };
+        return str.replace(/[၀-၉]/g, (m) => map[m]);
+      }
+
+      function extractNumbers(str) {
+        return str
+          .replace(/MMK/g, "") // Remove MMK
+          .replace(/[^\d,၀-၉]/g, "") // Keep only digits and commas (English + Burmese)
+          .split(",")
+          .filter((x) => x.trim() !== "")
+          .map((x) => parseInt(burmeseToEnglishNumber(x.trim()), 10) || 0);
+      }
+
+      function calculateTotalPrice(quantityRaw, priceRaw) {
+        const quantities = extractNumbers(quantityRaw);
+        const prices = extractNumbers(priceRaw);
+
+        let total = 0;
+        for (let i = 0; i < Math.min(quantities.length, prices.length); i++) {
+          total += quantities[i] * prices[i];
+        }
+
+        return total;
+      }
+
+      // Extract total price from selectedRow (which contains `email` as qty and `price` as item price)
+      const quantityRaw = selectedRow.email;
+      const priceRaw = selectedRow.price;
+
+      // Calculate product-only price
+      const productTotal = calculateTotalPrice(quantityRaw, priceRaw);
+
+      // Convert delivery price to number
+      const delivery =
+        parseInt(
+          burmeseToEnglishNumber(deliveryPrice.replace(/[^\d၀-၉]/g, "")),
+          10
+        ) || 0;
+
+      // Final total including delivery
+      const grandTotal = productTotal + delivery;
+
+      // Final message
+      const messageToSend = `
+လူကြီးမင်းရဲ့ Order လေးကို စစ်ဆေးပြီးပါပြီရှင်။
+ပို့်ဆောင်ခ မပါဘဲမှာယူထားတဲ့ မုန့်လေးများ စုစုပေါင်းကတော့ ${productTotal} MMK ပါရှင့်။
+ပို့ဆောင်ခနှင့်ပေါင်းလျှင် စုစုပေါင်း ${grandTotal} MMK ကျသင့်ပါတယ်ရှင်။
+မှာယူအားပေးမှုအတွက် ကျေးဇူးအထူးတင်ရှိပါတယ်ရှင့်။
+
+"အရသာရှိရှိ သုံးဆောင်ပါရှင်။"
+`.trim();
 
       // Build message with user name and delivery price
-      const messageToSend = `${selectedRow.name} order အတည်ပြုပြီးပါပြီ။ delivery price ${deliveryPrice} ကျသင့်ပါတယ် ခင်ဗျာ`;
+      // const messageToSend = `${selectedRow.name} order အတည်ပြုပြီးပါပြီ။ delivery price ${deliveryPrice} ကျသင့်ပါတယ် ခင်ဗျာ`;
 
       await axios.post("https://node.tharapa.ai/api/send_message", {
         fb_subscriber_id: selectedRow.fb_subscriber_id,
