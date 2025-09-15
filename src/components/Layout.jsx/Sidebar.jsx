@@ -10,48 +10,38 @@ import {
   Typography,
   IconButton,
   useMediaQuery,
+  Divider,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import BubbleChartIcon from "@mui/icons-material/BubbleChart";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Link, useLocation } from "react-router-dom";
-import { logout } from "../utils/auth";
-import NotificationAddIcon from "@mui/icons-material/NotificationAdd";
-import BookIcon from "@mui/icons-material/Book";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export const drawerWidth = 240;
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1090px)");
 
-  // Colors matching the dashboard theme
-  const selectedColor = "#ec407a"; // pink (#ec407a) for selected background
-  const hoverColor = "#f48fb1"; // lighter pink (#f48fb1) for hover
-  const textColor = "#d81b60"; // darker pink (#d81b60) for text/icons
-  const sidebarBg = "white"; // very light pink background (#fff0f5)
-  const headerBg = "#fce4ec"; // soft pale pink for header (#fce4ec)
+  // Theme colors
+  const selectedColor = "#FFD700"; // Gold
+  const hoverColor = "#FFC700"; // Slightly darker gold on hover
+  const textColor = "#FFFFFF"; // White
+  const sidebarBg = "#1C1C1C"; // Dark sidebar background
+  const headerBg = "#111111"; // Dark header background
 
   const menuItems = [
-    // { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-    // { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard/upload" },s
-    {
-      text: "Orders",
-      icon: <ShoppingCartIcon />,
-      path: "/dashboard/enat",
-    },
-    // {
-    //   text: "Blogs",
-    //   icon: <BookIcon />,
-    //   path: "/dashboard/glucomeal",
-    // },
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
   ];
 
   const handleDrawerToggle = () => setOpen(!open);
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth"); // Clear login/session
+    navigate("/login", { replace: true });
+  };
 
   const drawerContent = (
     <Box
@@ -62,101 +52,86 @@ const Sidebar = () => {
         justifyContent: "space-between",
       }}
     >
-      {/* Top Section: Logo + Navigation */}
+      {/* Top Section: Logo/Title */}
       <Box>
         <Box
           sx={{
             p: 2,
+            bgcolor: headerBg,
             textAlign: "center",
-            // borderBottom: "1px solid #f48fb1",
-            backgroundColor: "#188b40",
+            borderBottom: "1px solid #333",
           }}
         >
-          <Typography variant="h6" fontWeight="bold" color="white">
-            Season Dashboard
+          <Typography variant="h6" fontWeight="bold" color={textColor}>
+            My Admin
           </Typography>
         </Box>
 
+        {/* Menu Items */}
         <List sx={{ mt: 2 }}>
-          {menuItems.map(({ text, icon, path }) => (
-            <ListItem
-              button
-              key={text}
-              component={Link}
-              to={path}
-              selected={location.pathname === path}
-              onClick={isMobile ? handleDrawerToggle : undefined}
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: selectedColor,
+          {menuItems.map(({ text, icon, path }) => {
+            const selected = location.pathname === path;
+            return (
+              <ListItem
+                button
+                key={text}
+                component={Link}
+                to={path}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  backgroundColor: selected ? selectedColor : "transparent",
+                  "&:hover": {
+                    backgroundColor: selected
+                      ? selectedColor // keep gold if already selected
+                      : hoverColor,
+                  },
                   "& .MuiListItemText-primary": {
-                    fontWeight: "bold",
-                    color: "#fff",
+                    color: selected ? "#111" : textColor,
+                    fontWeight: selected ? "bold" : "normal",
                   },
                   "& .MuiListItemIcon-root": {
-                    color: "#fff",
+                    color: selected ? "#111" : textColor,
                   },
-                },
-                "&:hover": {
-                  backgroundColor: hoverColor,
-                  "& .MuiListItemText-primary": {
-                    color: "#fff",
-                  },
-                  "& .MuiListItemIcon-root": {
-                    color: "#fff",
-                  },
-                },
-                "& .MuiListItemText-root": {
-                  color: textColor,
-                },
-                "& .MuiListItemIcon-root": {
-                  color: textColor,
-                },
-              }}
-            >
-              <ListItemIcon>{icon}</ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+                  transition: "background-color 0.3s, color 0.3s",
+                }}
+              >
+                <ListItemIcon sx={{ color: selected ? "#111" : textColor }}>
+                  {icon}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItem>
+            );
+          })}
         </List>
       </Box>
 
       {/* Bottom Section: Logout */}
       <Box>
-        <List>
-          <ListItem
-            button
-            onClick={logout}
-            sx={{
-              "&:hover": {
-                backgroundColor: hoverColor,
-                "& .MuiListItemText-primary": {
-                  color: "#fff",
-                },
-                "& .MuiListItemIcon-root": {
-                  color: "#fff",
-                },
-              },
-              "& .MuiListItemText-root": {
-                color: textColor,
-              },
-              "& .MuiListItemIcon-root": {
-                color: textColor,
-              },
-            }}
-          >
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItem>
-        </List>
+        <Divider sx={{ bgcolor: "#333" }} />
+        <ListItem
+          button
+          onClick={handleLogout}
+          sx={{
+            "&:hover": { backgroundColor: hoverColor },
+            "& .MuiListItemText-primary": {
+              color: textColor,
+              fontWeight: "bold",
+            },
+            "& .MuiListItemIcon-root": { color: textColor },
+          }}
+        >
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary="Logout" />
+        </ListItem>
       </Box>
     </Box>
   );
 
   return (
     <>
+      {/* Mobile Menu Button */}
       {isMobile && (
         <IconButton
           edge="start"
@@ -173,6 +148,7 @@ const Sidebar = () => {
         </IconButton>
       )}
 
+      {/* Sidebar Drawer */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? open : true}
@@ -183,13 +159,11 @@ const Sidebar = () => {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
-            backgroundColor: sidebarBg,
+            background: sidebarBg,
             color: textColor,
           },
         }}
-        ModalProps={{
-          keepMounted: true,
-        }}
+        ModalProps={{ keepMounted: true }}
       >
         {drawerContent}
       </Drawer>

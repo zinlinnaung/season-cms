@@ -8,8 +8,8 @@ const Layout = () => {
     <Box sx={{ display: "flex", height: "100vh" }}>
       <Sidebar />
       <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-        {/* <Topbar /> */}
-        <Box sx={{ flexGrow: 1, p: 3, bgcolor: "#fefefe" }}>
+        <Topbar />
+        <Box sx={{ flexGrow: 1, p: 3, bgcolor: "white" }}>
           <Outlet />
         </Box>
       </Box>
