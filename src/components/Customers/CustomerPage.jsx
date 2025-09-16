@@ -29,11 +29,14 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import EditIcon from "@mui/icons-material/Edit";
 
 import "antd/dist/reset.css";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import * as XLSX from "xlsx";
+
 dayjs.extend(isBetween);
 
 const { RangePicker } = DatePicker;
@@ -54,6 +57,88 @@ const CustomerPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [deliveryPrice, setDeliveryPrice] = useState(0);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    email: "",
+    price: "",
+    social_id: "",
+  });
+
+  const handleExport = () => {
+    if (!filteredData.length) {
+      setSnackbarMessage("⚠ No data to export.");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    // prepare data for export
+    const exportData = filteredData.map((row) => ({
+      ID: row.id,
+      Name: row.name,
+      Phone: row.phone,
+      Address: row.address,
+      CreatedAt: new Date(row.created_at).toLocaleString("en-GB"),
+      Products: row.products
+        .map((p) => `${p.name} (x${p.quantity})`)
+        .join(", "),
+      Total: row.products.reduce((sum, p) => sum + p.price * p.quantity, 0),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+
+    XLSX.writeFile(workbook, `orders_export_${Date.now()}.xlsx`);
+  };
+
+  // open edit dialog
+  const handleEditClick = (row) => {
+    setSelectedRow(row);
+    setEditForm({
+      name: row.name || "",
+      phone: row.phone || "",
+      address: row.address || "",
+      email: row.email || "", // quantity
+      price: row.price || "", // price
+      social_id: row.social_id || "", // product code
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedRow(null);
+  };
+
+  // save edited data
+  const handleEditSave = async () => {
+    try {
+      if (!selectedRow) return;
+
+      await axios.put(
+        `https://node.tharapa.ai/api/customer-other/update/${selectedRow.id}`,
+        editForm
+      );
+
+      setSnackbarMessage(`✅ Updated customer ID: ${selectedRow.id}`);
+      setSnackbarSeverity("success");
+
+      await fetchCustomers(); // refresh table
+    } catch (error) {
+      console.error("Error updating customer:", error);
+      setSnackbarMessage("❌ Failed to update customer.");
+      setSnackbarSeverity("error");
+    } finally {
+      setSnackbarOpen(true);
+      setEditDialogOpen(false);
+      setSelectedRow(null);
+    }
+  };
 
   // --- Burmese number helpers ---
   function burmeseToEnglishNumber(str) {
@@ -149,6 +234,24 @@ const CustomerPage = () => {
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
+  };
+  const handleCancelClick = async (row) => {
+    try {
+      await axios.post(
+        `https://node.tharapa.ai/api/customer-other/cancel/${row.id}`
+      );
+
+      setSnackbarMessage(`❌ Cancelled customer ID: ${row.id}`);
+      setSnackbarSeverity("warning");
+
+      await fetchCustomers(); // refresh table
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      setSnackbarMessage("❌ Failed to cancel order.");
+      setSnackbarSeverity("error");
+    } finally {
+      setSnackbarOpen(true);
+    }
   };
 
   const handleConfirmClick = (row) => {
@@ -256,7 +359,7 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
     dialogProductTotal + (parseInt(deliveryPrice, 10) || 0);
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, p: 2 }}>
+    <Container maxWidth="xl" sx={{ p: 2 }}>
       <Typography variant="h4" gutterBottom>
         Orders List
       </Typography>
@@ -284,11 +387,20 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
           sx={{ maxWidth: 250, backgroundColor: "#fff", borderRadius: 2 }}
         />
 
-        <RangePicker
-          value={dateRange}
-          onChange={(dates) => setDateRange(dates)}
-          style={{ minWidth: 250 }}
-        />
+        <Box display="flex" gap={2}>
+          <RangePicker
+            value={dateRange}
+            onChange={(dates) => setDateRange(dates)}
+            style={{ minWidth: 250 }}
+          />
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "#fed700", color: "black" }}
+            onClick={handleExport}
+          >
+            Export
+          </Button>
+        </Box>
       </Box>
 
       {loading ? (
@@ -296,7 +408,30 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer sx={{ maxHeight: "60vh" }}>
+        <TableContainer
+          sx={{
+            maxHeight: "60vh",
+            border: "1px solid black",
+            borderRadius: 2,
+            maxHeight: "60vh",
+            border: "1px solid black",
+            borderRadius: 2,
+            "&::-webkit-scrollbar": {
+              width: "6px", // 👈 narrow scrollbar
+              height: "6px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#fed700", // scrollbar color
+              borderRadius: "4px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: "#555",
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "#f1f1f1",
+            },
+          }}
+        >
           <Table stickyHeader>
             <TableHead>
               <TableRow>
@@ -384,14 +519,14 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
                                       .toLocaleString()}
                                   </TableCell>
                                 </TableRow>
-                                <TableRow>
+                                {/* <TableRow>
                                   <TableCell colSpan={4} align="right">
                                     Deli Fee
                                   </TableCell>
                                   <TableCell>
                                     {row.deli_fee?.toLocaleString()}
                                   </TableCell>
-                                </TableRow>
+                                </TableRow> */}
                                 <TableRow>
                                   <TableCell colSpan={4} align="right">
                                     Net Amount
@@ -407,7 +542,7 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
                                 </TableRow>
                               </TableBody>
                             </Table>
-                            <Box mt={2}>
+                            <Box mt={2} display="flex" gap={2}>
                               <Button
                                 variant="contained"
                                 color="primary"
@@ -415,6 +550,24 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
                                 onClick={() => handleConfirmClick(row)}
                               >
                                 Confirm
+                              </Button>
+                              <Button
+                                variant="contained"
+                                sx={{
+                                  backgroundColor: "#fed700",
+                                  color: "black",
+                                }}
+                                onClick={() => handleEditClick(row)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color="error"
+                                disabled={row.is_cancle}
+                                onClick={() => handleCancelClick(row)}
+                              >
+                                Cancel
                               </Button>
                             </Box>
                           </Box>
@@ -428,6 +581,70 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
           </Table>
         </TableContainer>
       )}
+
+      <Dialog open={editDialogOpen} onClose={handleEditDialogClose} fullWidth>
+        <DialogTitle>Edit Customer</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Name"
+            fullWidth
+            value={editForm.name}
+            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+          />
+          <TextField
+            margin="dense"
+            label="Phone"
+            fullWidth
+            value={editForm.phone}
+            onChange={(e) =>
+              setEditForm({ ...editForm, phone: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            label="Address"
+            fullWidth
+            value={editForm.address}
+            onChange={(e) =>
+              setEditForm({ ...editForm, address: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            label="Quantity (Email field)"
+            fullWidth
+            value={editForm.email}
+            onChange={(e) =>
+              setEditForm({ ...editForm, email: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            label="Price"
+            fullWidth
+            value={editForm.price}
+            onChange={(e) =>
+              setEditForm({ ...editForm, price: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            label="Product Code (Social ID)"
+            fullWidth
+            value={editForm.social_id}
+            onChange={(e) =>
+              setEditForm({ ...editForm, social_id: e.target.value })
+            }
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditDialogClose}>Cancel</Button>
+          <Button onClick={handleEditSave} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* confirm dialog */}
       <Dialog open={dialogOpen} onClose={handleDialogClose}>
