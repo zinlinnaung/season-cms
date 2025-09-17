@@ -59,6 +59,8 @@ const CustomerPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [deliveryPrice, setDeliveryPrice] = useState(0);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelRow, setCancelRow] = useState(null);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -271,15 +273,20 @@ const CustomerPage = () => {
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
   };
-  const handleCancelClick = async (row) => {
+  const handleCancelClick = (row) => {
+    setCancelRow(row);
+    setCancelDialogOpen(true);
+  };
+  const handleCancelConfirm = async () => {
     try {
+      if (!cancelRow) return;
+
       await axios.post(
-        `https://node.tharapa.ai/api/customer-other/cancel/${row.id}`
+        `https://node.tharapa.ai/api/customer-other/cancel/${cancelRow.id}`
       );
 
-      setSnackbarMessage(`❌ Cancelled customer ID: ${row.id}`);
+      setSnackbarMessage(`❌ Cancelled customer ID: ${cancelRow.id}`);
       setSnackbarSeverity("warning");
-
       await fetchCustomers(); // refresh table
     } catch (error) {
       console.error("Error cancelling order:", error);
@@ -287,7 +294,15 @@ const CustomerPage = () => {
       setSnackbarSeverity("error");
     } finally {
       setSnackbarOpen(true);
+      setCancelDialogOpen(false);
+      setCancelRow(null);
     }
+  };
+
+  // Close cancel dialog
+  const handleCancelDialogClose = () => {
+    setCancelDialogOpen(false);
+    setCancelRow(null);
   };
 
   const handleConfirmClick = (row) => {
@@ -788,6 +803,26 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button onClick={handleDialogConfirm} variant="contained">
             Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Cancel Confirmation Dialog */}
+      <Dialog open={cancelDialogOpen} onClose={handleCancelDialogClose}>
+        <DialogTitle>Confirm Cancel</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to cancel the order for{" "}
+            <strong>{cancelRow?.name}</strong> (ID: {cancelRow?.id})?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDialogClose}>No</Button>
+          <Button
+            onClick={handleCancelConfirm}
+            variant="contained"
+            color="error"
+          >
+            Yes, Cancel
           </Button>
         </DialogActions>
       </Dialog>
