@@ -25,11 +25,13 @@ import {
   DialogContentText,
   DialogActions,
   TableContainer,
+  Paper,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 import "antd/dist/reset.css";
 import { DatePicker } from "antd";
@@ -63,9 +65,7 @@ const CustomerPage = () => {
     name: "",
     phone: "",
     address: "",
-    email: "",
-    price: "",
-    social_id: "",
+    products: [], // ✅ store products as array of { code, price, quantity }
   });
 
   const handleExport = () => {
@@ -98,15 +98,41 @@ const CustomerPage = () => {
 
   // open edit dialog
   const handleEditClick = (row) => {
-    setSelectedRow(row);
+    const productCodes = row.social_id
+      ? row.social_id
+          .split(",")
+          .map((c) => c.trim())
+          .filter((c) => c !== "")
+      : [];
+
+    const productPrices = row.price
+      ? row.price
+          .split(",")
+          .map((p) => p.trim())
+          .filter((p) => p !== "")
+      : [];
+
+    const productQuantities = row.email
+      ? row.email
+          .split(",")
+          .map((q) => q.trim())
+          .filter((q) => q !== "")
+      : [];
+
+    const products = productCodes.map((code, idx) => ({
+      code,
+      price: productPrices[idx] || "",
+      quantity: productQuantities[idx] || "",
+    }));
+
     setEditForm({
       name: row.name || "",
       phone: row.phone || "",
       address: row.address || "",
-      email: row.email || "", // quantity
-      price: row.price || "", // price
-      social_id: row.social_id || "", // product code
+      products,
     });
+
+    setSelectedRow(row);
     setEditDialogOpen(true);
   };
 
@@ -120,15 +146,25 @@ const CustomerPage = () => {
     try {
       if (!selectedRow) return;
 
+      const social_id = editForm.products.map((p) => p.code).join(",");
+      const price = editForm.products.map((p) => p.price).join(",");
+      const email = editForm.products.map((p) => p.quantity).join(",");
+
       await axios.put(
         `https://node.tharapa.ai/api/customer-other/update/${selectedRow.id}`,
-        editForm
+        {
+          name: editForm.name,
+          phone: editForm.phone,
+          address: editForm.address,
+          social_id,
+          price,
+          email,
+        }
       );
 
       setSnackbarMessage(`✅ Updated customer ID: ${selectedRow.id}`);
       setSnackbarSeverity("success");
-
-      await fetchCustomers(); // refresh table
+      await fetchCustomers();
     } catch (error) {
       console.error("Error updating customer:", error);
       setSnackbarMessage("❌ Failed to update customer.");
@@ -585,6 +621,7 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
       <Dialog open={editDialogOpen} onClose={handleEditDialogClose} fullWidth>
         <DialogTitle>Edit Customer</DialogTitle>
         <DialogContent>
+          {/* Customer Info */}
           <TextField
             margin="dense"
             label="Name"
@@ -610,34 +647,111 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
               setEditForm({ ...editForm, address: e.target.value })
             }
           />
-          <TextField
-            margin="dense"
-            label="Quantity (Email field)"
-            fullWidth
-            value={editForm.email}
-            onChange={(e) =>
-              setEditForm({ ...editForm, email: e.target.value })
-            }
-          />
-          <TextField
-            margin="dense"
-            label="Price"
-            fullWidth
-            value={editForm.price}
-            onChange={(e) =>
-              setEditForm({ ...editForm, price: e.target.value })
-            }
-          />
-          <TextField
-            margin="dense"
-            label="Product Code (Social ID)"
-            fullWidth
-            value={editForm.social_id}
-            onChange={(e) =>
-              setEditForm({ ...editForm, social_id: e.target.value })
-            }
-          />
+
+          {/* Product Table */}
+          <Box mt={3}>
+            <Typography variant="h6" gutterBottom>
+              Products
+            </Typography>
+            <Table
+              size="small"
+              sx={{ border: "1px solid #ddd", borderRadius: 2 }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell>Code</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {editForm.products.length > 0 ? (
+                  editForm.products.map((product, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <TextField
+                          variant="standard"
+                          size="medium"
+                          sx={{ minWidth: 150, borderBottom: "none" }}
+                          value={product.code}
+                          onChange={(e) => {
+                            const newProducts = [...editForm.products];
+                            newProducts[index].code = e.target.value;
+                            setEditForm({ ...editForm, products: newProducts });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          variant="standard"
+                          size="small"
+                          value={product.price}
+                          onChange={(e) => {
+                            const newProducts = [...editForm.products];
+                            newProducts[index].price = e.target.value;
+                            setEditForm({ ...editForm, products: newProducts });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          variant="standard"
+                          size="small"
+                          value={product.quantity}
+                          onChange={(e) => {
+                            const newProducts = [...editForm.products];
+                            newProducts[index].quantity = e.target.value;
+                            setEditForm({ ...editForm, products: newProducts });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => {
+                            const newProducts = editForm.products.filter(
+                              (_, i) => i !== index
+                            );
+                            setEditForm({ ...editForm, products: newProducts });
+                          }}
+                        >
+                          <DeleteForeverIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      No products
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+
+            {/* Add Row Button */}
+            <Box mt={2} textAlign="left">
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setEditForm({
+                    ...editForm,
+                    products: [
+                      ...editForm.products,
+                      { code: "", price: "", quantity: "" },
+                    ],
+                  });
+                }}
+              >
+                + Add Product
+              </Button>
+            </Box>
+          </Box>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={handleEditDialogClose}>Cancel</Button>
           <Button onClick={handleEditSave} variant="contained">
