@@ -186,9 +186,9 @@ const CustomerPage = () => {
             .split(",")
             .map((q) => {
               const numStr = burmeseToEnglishNumber(q.replace(/[^\d၀-၉]/g, ""));
-              return parseInt(numStr, 10) || 1; // default 1
+              return parseInt(numStr, 10) || 0; // use 0 for empty/invalid
             })
-            .filter((q) => q > 0) // ignore invalid quantities
+            .filter((q) => q > 0) // keep only real quantities
         : [];
 
       // --- combine into products ---
