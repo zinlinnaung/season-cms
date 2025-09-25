@@ -9,8 +9,9 @@ import {
   Paper,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
-import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
+// import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 import { useNavigate } from "react-router-dom";
+import PersonIcon from "@mui/icons-material/Person";
 import axios from "axios";
 
 const LoginPage = () => {
@@ -25,12 +26,12 @@ const LoginPage = () => {
     setIsLoading(true);
     setError("");
 
-    const phoneRegex = /^09\d{6,9}$/;
-    if (!phoneRegex.test(phone)) {
-      setError("ဖုန်းနံပါတ်သည် 09 ဖြင့်စတင်ရပါမည်။");
-      setIsLoading(false);
-      return;
-    }
+    // const phoneRegex = /^09\d{6,9}$/;
+    // if (!phoneRegex.test(phone)) {
+    //   setError("ဖုန်းနံပါတ်သည် 09 ဖြင့်စတင်ရပါမည်။");
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     try {
       const response = await axios.post(
@@ -43,7 +44,7 @@ const LoginPage = () => {
       navigate("/dashboard");
     } catch (err) {
       if (err.response && err.response.status === 401) {
-        setError("ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားနေပါသည်။");
+        setError("username သို့မဟုတ် စကားဝှက် မှားနေပါသည်။");
       } else {
         setError("Server ပြဿနာရှိနေပါသည်။ နောက်မှပြန်ကြိုးစားပါ။");
       }
@@ -106,9 +107,9 @@ const LoginPage = () => {
         >
           {/* Phone */}
           <TextField
-            label="ဖုန်းနံပါတ်ထည့်ပါ"
+            label="username ထည့်ပါ"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+            onChange={(e) => setPhone(e.target.value)}
             fullWidth
             disabled={isLoading}
             variant="outlined"
@@ -119,7 +120,7 @@ const LoginPage = () => {
               },
             }}
             InputProps={{
-              startAdornment: <PhoneAndroidIcon sx={{ color: "#d81b60" }} />,
+              startAdornment: <PersonIcon sx={{ color: "#d81b60" }} />,
             }}
           />
 
