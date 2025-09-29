@@ -61,6 +61,7 @@ const CustomerPage = () => {
   const [deliveryPrice, setDeliveryPrice] = useState(0);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelRow, setCancelRow] = useState(null);
+  const [cancelMessage, setCancelMessage] = useState("");
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -281,13 +282,25 @@ const CustomerPage = () => {
     try {
       if (!cancelRow) return;
 
+      // 1. Cancel backend
       await axios.post(
         `https://node.tharapa.ai/api/customer-other/cancel/${cancelRow.id}`
       );
 
-      setSnackbarMessage(`❌ Cancelled customer ID: ${cancelRow.id}`);
+      // 2. Send message if provided
+      if (cancelMessage.trim()) {
+        await axios.post("https://node.tharapa.ai/api/send_message", {
+          fb_subscriber_id: cancelRow.fb_subscriber_id,
+          fb_page_id: cancelRow.fb_page_id,
+          message: cancelMessage.trim(),
+        });
+      }
+
+      setSnackbarMessage(
+        `❌ Cancelled and messaged customer ID: ${cancelRow.id}`
+      );
       setSnackbarSeverity("warning");
-      await fetchCustomers(); // refresh table
+      await fetchCustomers();
     } catch (error) {
       console.error("Error cancelling order:", error);
       setSnackbarMessage("❌ Failed to cancel order.");
@@ -296,6 +309,7 @@ const CustomerPage = () => {
       setSnackbarOpen(true);
       setCancelDialogOpen(false);
       setCancelRow(null);
+      setCancelMessage(""); // reset
     }
   };
 
@@ -808,12 +822,23 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
       </Dialog>
       {/* Cancel Confirmation Dialog */}
       <Dialog open={cancelDialogOpen} onClose={handleCancelDialogClose}>
-        <DialogTitle>Confirm Cancel</DialogTitle>
+        <DialogTitle>Cancel Order</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to cancel the order for{" "}
             <strong>{cancelRow?.name}</strong> (ID: {cancelRow?.id})?
           </DialogContentText>
+
+          <TextField
+            margin="dense"
+            label="Message to Customer"
+            fullWidth
+            multiline
+            minRows={3}
+            value={cancelMessage}
+            onChange={(e) => setCancelMessage(e.target.value)}
+            placeholder="Type the message you want to send to customer..."
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDialogClose}>No</Button>
