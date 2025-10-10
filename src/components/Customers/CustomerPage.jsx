@@ -71,6 +71,19 @@ const CustomerPage = () => {
     products: [], // ✅ store products as array of { code, price, quantity }
   });
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  let userId;
+  let userName;
+  if (user) {
+    userId = user.id;
+    userName = user.name;
+
+    console.log("User ID:", userId);
+    console.log("User Name:", userName);
+  } else {
+    console.log("No user found in localStorage");
+  }
+
   const handleExport = () => {
     if (!filteredData.length) {
       setSnackbarMessage("⚠ No data to export.");
@@ -251,6 +264,7 @@ const CustomerPage = () => {
       const response = await axios.get(
         "https://node.tharapa.ai/api/customer-other"
       );
+      console.log("customers: ", normalizeCustomers(response.data));
       setCustomers(normalizeCustomers(response.data));
     } catch (error) {
       console.error("Failed to fetch customer data:", error);
@@ -284,7 +298,12 @@ const CustomerPage = () => {
 
       // 1. Cancel backend
       await axios.post(
-        `https://node.tharapa.ai/api/customer-other/cancel/${cancelRow.id}`
+        `https://node.tharapa.ai/api/customer-other/cancel/${cancelRow.id}`,
+        {
+          userId: userId,
+          userName: userName,
+          message: cancelMessage.trim(),
+        }
       );
 
       // 2. Send message if provided
@@ -344,7 +363,11 @@ const CustomerPage = () => {
 
       // Confirm backend
       await axios.post(
-        `https://node.tharapa.ai/api/customer-other/confirm/${selectedRow.id}`
+        `https://node.tharapa.ai/api/customer-other/confirm/${selectedRow.id}`,
+        {
+          userId: userId,
+          userName: userName,
+        }
       );
 
       // Calculate totals
@@ -507,6 +530,16 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
                 <TableCell sx={{ backgroundColor: "#fed700" }}>
                   Address
                 </TableCell>
+                {(tabIndex == 1 || tabIndex == 2) && (
+                  <TableCell sx={{ backgroundColor: "#fed700" }}>
+                    Updated By
+                  </TableCell>
+                )}
+                {tabIndex == 2 && (
+                  <TableCell sx={{ backgroundColor: "#fed700" }}>
+                    Remark
+                  </TableCell>
+                )}
                 <TableCell sx={{ backgroundColor: "#fed700" }}>
                   Created At
                 </TableCell>
@@ -532,6 +565,12 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
                       <TableCell>{row.name}</TableCell>
                       <TableCell>{row.phone}</TableCell>
                       <TableCell>{row.address}</TableCell>
+                      {(tabIndex == 1 || tabIndex == 2) && (
+                        <TableCell>{row.updated_by_name ?? ""}</TableCell>
+                      )}
+                      {tabIndex == 2 && (
+                        <TableCell>{row.remark ?? ""}</TableCell>
+                      )}
                       <TableCell>
                         {new Date(row.created_at).toLocaleString("en-GB")}
                       </TableCell>
@@ -540,7 +579,7 @@ Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။
                     <TableRow>
                       <TableCell
                         style={{ paddingBottom: 0, paddingTop: 0 }}
-                        colSpan={6}
+                        colSpan={8}
                       >
                         <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                           <Box margin={2}>

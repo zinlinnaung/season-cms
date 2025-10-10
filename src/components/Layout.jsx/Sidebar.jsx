@@ -39,7 +39,7 @@ const Sidebar = () => {
   const handleDrawerToggle = () => setOpen(!open);
 
   const handleLogout = () => {
-    localStorage.removeItem("auth"); // Clear login/session
+    localStorage.removeItem("access_token"); // Clear login/session
     navigate("/login", { replace: true });
   };
 
