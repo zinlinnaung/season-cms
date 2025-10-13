@@ -14,8 +14,10 @@ import {
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PeopleIcon from "@mui/icons-material/People";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import MessageIcon from "@mui/icons-material/Message";
 
 export const drawerWidth = 240;
 
@@ -24,6 +26,8 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1090px)");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role ?? null;
 
   // Theme colors
   const selectedColor = "#FFD700"; // Gold
@@ -34,6 +38,12 @@ const Sidebar = () => {
 
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
+    role === "Admin"
+      ? { text: "Users", icon: <PeopleIcon />, path: "/dashboard/users" }
+      : "",
+    role === "Admin"
+      ? { text: "Messages", icon: <MessageIcon />, path: "/dashboard/messages" }
+      : "",
   ];
 
   const handleDrawerToggle = () => setOpen(!open);

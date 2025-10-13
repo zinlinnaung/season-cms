@@ -48,6 +48,8 @@ const CustomerPage = () => {
   const [loading, setLoading] = useState(true);
   const [tabIndex, setTabIndex] = useState(0);
 
+  const [orderConfirmMsg, setOrderConfirmMsg] = useState("");
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -74,9 +76,11 @@ const CustomerPage = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   let userId;
   let userName;
+  let pageId;
   if (user) {
     userId = user.id;
     userName = user.name;
+    pageId = user.pageId;
 
     console.log("User ID:", userId);
     console.log("User Name:", userName);
@@ -262,7 +266,12 @@ const CustomerPage = () => {
   const fetchCustomers = async () => {
     try {
       const response = await axios.get(
-        "https://node.tharapa.ai/api/customer-other"
+        "https://node.tharapa.ai/api/customer-other-with-pageId",
+        {
+          params: {
+            pageId: pageId,
+          },
+        }
       );
       console.log("customers: ", normalizeCustomers(response.data));
       setCustomers(normalizeCustomers(response.data));
@@ -276,8 +285,28 @@ const CustomerPage = () => {
     }
   };
 
+  const fetchMessage = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("https://node.tharapa.ai/msg/order-message", {
+        params: {
+          pageId: pageId,
+        },
+      });
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        const msg = res.data[0];
+        setOrderConfirmMsg(msg.text || msg.message || "");
+      }
+    } catch (err) {
+      console.error("Fetch failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchCustomers();
+    fetchMessage();
   }, []);
 
   const handleSnackbarClose = (event, reason) => {
@@ -379,15 +408,37 @@ const CustomerPage = () => {
       const delivery = parseInt(deliveryPrice, 10) || 0;
       const grandTotal = productTotal + delivery;
 
-      const messageToSend = `
+      const renderTemplate = (template, data) => {
+        return template.replace(/{{(\w+)}}/g, (match, key) => {
+          return data[key] !== undefined ? String(data[key]) : match;
+        });
+      };
+
+      //       const messageToSend = `
+      // လူကြီးမင်းရဲ့ Order လေးကို စစ်ဆေးပြီးပါပြီရှင် ။
+      // ပို့်ဆောင်ခ စျေးနှုန်းလေးကတော့ {{delivery}} MMK ပါရှင့်။
+      // မှာယူထားတဲ့မုန့်လေးတွေရယ် ပို့ဆောင်ခ စျေးနှုန်းလေးနဲ့ ဆိုရင်
+      // Total - {{grandTotal}} MMK ကျသင့်ပါတယ်ရှင် ။
+
+      // မှာယူအားပေးမှုအတွက် ကျေးဇူးအထူးတင်ရှိပါတယ်ရှင့်။
+      // "အရသာရှိရှိ သုံးဆောင်ပါရှင်။"
+      //       `.trim();
+      let messageToSend;
+      if (orderConfirmMsg) {
+        messageToSend = renderTemplate(orderConfirmMsg, {
+          delivery: delivery.toLocaleString(),
+          grandTotal: grandTotal.toLocaleString(),
+        });
+      } else {
+        messageToSend = `
 လူကြီးမင်းရဲ့ Order လေးကို စစ်ဆေးပြီးပါပြီရှင် ။ 
 ပို့်ဆောင်ခ စျေးနှုန်းလေးကတော့ ${delivery} MMK ပါရှင့်။
-မှာယူထားတဲ့မုန့်လေးတွေရယ် ပို့ဆောင်ခ စျေးနှုန်းလေးနဲ့ ဆိုရင် 
+မှာယူထားတဲ့ Order လေးတွေရယ် ပို့ဆောင်ခ စျေးနှုန်းလေးနဲ့ ဆိုရင် 
 Total - ${grandTotal} MMK ကျသင့်ပါတယ်ရှင် ။ 
 
 မှာယူအားပေးမှုအတွက် ကျေးဇူးအထူးတင်ရှိပါတယ်ရှင့်။
-"အရသာရှိရှိ သုံးဆောင်ပါရှင်။"
       `.trim();
+      }
 
       await axios.post("https://node.tharapa.ai/api/send_message", {
         fb_subscriber_id: selectedRow.fb_subscriber_id,

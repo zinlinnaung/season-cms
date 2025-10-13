@@ -15,6 +15,8 @@ import NotificationPage from "../components/Noti/NotificationPage";
 import BlogPage from "../components/blog/BlogPage";
 import ReportingPage from "../components/Report/ReportingPage";
 import CustomerPage from "../components/Customers/CustomerPage";
+import UsersPage from "../pages/User";
+import Message from "../pages/Message";
 
 export const RouterComponent = () => {
   return (
@@ -36,6 +38,8 @@ export const RouterComponent = () => {
         <Route path="enat" element={<CustomerPage />} />
         <Route path="glucomeal" element={<BlogPage />} />
         <Route path="ferrovit" element={<FerrovitDashboard />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="messages" element={<Message />} />
       </Route>
 
       {/* PUBLIC ROUTES */}
