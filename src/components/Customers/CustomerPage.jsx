@@ -293,9 +293,9 @@ const CustomerPage = () => {
           pageId: pageId,
         },
       });
-      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const msg = res.data[0];
-        setOrderConfirmMsg(msg.text || msg.message || "");
+      if (res.data) {
+        const msg = res.data.order_confirm_msg ? res.data.order_confirm_msg : '';
+        setOrderConfirmMsg(msg || "");
       }
     } catch (err) {
       console.error("Fetch failed:", err);

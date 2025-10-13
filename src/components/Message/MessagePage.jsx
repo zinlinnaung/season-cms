@@ -35,10 +35,11 @@ const MessagePage = () => {
           pageId: pageId,
         },
       });
-      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const msg = res.data[0];
+      console.log('res data: ', res.data)
+      if (res.data) {
+        const msg = res.data.order_confirm_msg ? res.data.order_confirm_msg : '';
         setExistingMessage(msg);
-        setMessage(msg.text || msg.message || "");
+        setMessage(msg || "");
       }
     } catch (err) {
       console.error("Fetch failed:", err);
