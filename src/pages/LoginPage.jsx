@@ -109,7 +109,7 @@ const LoginPage = () => {
             color: "#d81b60", // Deep pink text
           }}
         >
-          Login
+          Login Lori Gaming
         </Typography>
 
         <Box
