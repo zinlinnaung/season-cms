@@ -89,16 +89,6 @@ const LoginPage = () => {
         px: 2,
       }}
     >
-      {/* Logo */}
-      <Box
-        component="img"
-        src="season.png"
-        alt="Logo"
-        sx={{
-          width: { xs: "45%", sm: "140px", md: "8%", lg: "8%" },
-          mb: 3,
-        }}
-      />
 
       {/* Login Card */}
       <Paper
